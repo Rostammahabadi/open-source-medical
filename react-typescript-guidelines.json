@@ -1,0 +1,145 @@
+{
+  "componentGuidelines": {
+    "fileSizeAndOrganization": {
+      "maximumFileSize": [
+        { "type": "page", "maxLines": 500 },
+        { "type": "component", "maxLines": 300 }
+      ],
+      "componentStructure": [
+        "One main component per file",
+        "Place related sub-components in dedicated subdirectory",
+        "Follow pattern: ComponentName/index.tsx for main components"
+      ]
+    },
+    "architecture": {
+      "composition": [
+        "Break down complex UI into smaller, reusable components",
+        "Use composition over inheritance",
+        "Create shared components for commonly used UI elements"
+      ],
+      "propsManagement": [
+        "Define prop types using TypeScript interfaces",
+        "Keep props focused and specific to component needs",
+        "Use prop spreading sparingly and only when necessary"
+      ]
+    }
+  },
+  "codeOrganization": {
+    "directoryStructure": {
+      "src": {
+        "components": {
+          "common": "Shared components",
+          "features": "Feature-specific components",
+          "layouts": "Layout components"
+        },
+        "hooks": {
+          "common": "Shared hooks",
+          "features": "Feature-specific hooks"
+        },
+        "pages": {
+          "[feature]": "Feature-specific pages"
+        },
+        "types": "TypeScript type definitions",
+        "utils": "Utility functions",
+        "lib": "Third-party integrations"
+      }
+    },
+    "namingConventions": {
+      "filesAndDirectories": [
+        { "pattern": "PascalCase", "for": "Component files", "example": "UserProfile.tsx" },
+        { "pattern": "camelCase", "for": "Utility files", "example": "dateUtils.ts" },
+        { "pattern": "kebab-case", "for": "CSS modules", "example": "user-profile.module.css" }
+      ],
+      "componentsAndFunctions": [
+        { "pattern": "PascalCase", "for": "Component names", "example": "UserProfile" },
+        { "pattern": "camelCase", "for": "Functions and variables", "example": "getUserData" },
+        { "pattern": "UPPER_SNAKE_CASE", "for": "Constants", "example": "MAX_ITEMS" }
+      ]
+    }
+  },
+  "codeStyle": {
+    "componentStructureOrder": [
+      "Imports",
+      "Component interface",
+      "Hooks",
+      "Derived state",
+      "Event handlers",
+      "Render helpers",
+      "Return JSX"
+    ],
+    "bestPractices": {
+      "stateManagement": [
+        "Keep state as local as possible",
+        "Use React Query for server state",
+        "Implement context only when state needs to be shared across multiple components"
+      ],
+      "performance": [
+        "Memoize expensive calculations with useMemo",
+        "Use useCallback for function props",
+        "Implement React.memo for pure components that re-render frequently"
+      ],
+      "errorHandling": [
+        "Implement error boundaries for component trees",
+        "Use try-catch blocks for async operations",
+        "Display user-friendly error messages"
+      ],
+      "forms": [
+        "Use React Hook Form for form management",
+        "Implement Zod schemas for validation",
+        "Create reusable form components"
+      ]
+    }
+  },
+  "testingGuidelines": {
+    "componentTesting": [
+      "Write tests for critical user interactions",
+      "Test component props and state changes",
+      "Mock external dependencies"
+    ],
+    "testOrganization": [
+      "Place tests next to components: Component.test.tsx",
+      "Group related tests using describe blocks",
+      "Use clear test descriptions"
+    ]
+  },
+  "documentation": {
+    "codeComments": [
+      "Document complex logic and business rules",
+      "Use JSDoc for public functions and components",
+      "Keep comments up to date with code changes"
+    ],
+    "componentDocumentation": [
+      "Document component props using TypeScript interfaces",
+      "Include usage examples for complex components",
+      "Document any side effects or dependencies"
+    ]
+  },
+  "versionControl": {
+    "commits": [
+      "Write clear, descriptive commit messages",
+      "Keep commits focused and atomic",
+      "Follow conventional commits format"
+    ],
+    "branches": [
+      "Use feature branches for new development",
+      "Keep branches up to date with main",
+      "Delete merged branches"
+    ]
+  },
+  "accessibility": {
+    "requirements": [
+      "Use semantic HTML elements",
+      "Implement ARIA attributes where necessary",
+      "Ensure keyboard navigation works",
+      "Maintain color contrast ratios"
+    ]
+  },
+  "performance": {
+    "optimization": [
+      "Lazy load routes and heavy components",
+      "Optimize images and assets",
+      "Monitor and fix performance bottlenecks",
+      "Use performance monitoring tools"
+    ]
+  }
+} 
