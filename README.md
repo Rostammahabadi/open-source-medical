@@ -204,11 +204,6 @@ export const Button: React.FC<Props> = ({
   - Use React Query for server state
   - Use Context API sparingly
 
-- **Performance**
-  - Use `useMemo` for expensive calculations
-  - Use `useCallback` for event handlers passed as props
-  - Implement virtualization for long lists
-
 - **Accessibility**
   - Use semantic HTML elements
   - Add proper ARIA attributes
