@@ -110,21 +110,115 @@ my-react-app/
 ├── package.json
 ├── tsconfig.json
 ├── src/
-│   ├── components/
+│   ├── components/  # UI components organized by domain
 │   │   └── Button.tsx
-│   ├── hooks/
-│   ├── pages/
-│   ├── types/
-│   ├── utils/
-│   ├── lib/
-│   ├── assets/
-│   └── styles/
+│   ├── hooks/       # Custom React hooks
+│   ├── pages/       # Route components
+│   ├── types/       # TypeScript definitions
+│   ├── utils/       # Helper functions
+│   ├── lib/         # Third-party integrations
+│   ├── assets/      # Images, fonts, and other static files
+│   └── styles/      # Global styles and themes
 └── docs/
     ├── project_plan.md
     ├── requirements.md
     ├── architecture.md
     └── ai_guidance.md (advanced version only)
 ```
+
+## 🧩 React TypeScript Development Guidelines
+
+### Core Principles
+
+1. **Component-Based Architecture**
+   - Build small, focused components (< 300 lines)
+   - Use composition over inheritance
+   - One main component per file
+
+2. **Type Safety**
+   - Define explicit interfaces for all props
+   - Use TypeScript features to ensure type safety
+   - Avoid using `any` type
+
+3. **Performance First**
+   - Memoize expensive calculations and callbacks
+   - Implement virtualization for long lists
+   - Use React.memo for pure components
+
+### Naming Conventions
+
+| Item | Convention | Example |
+|------|------------|---------|
+| Component files | PascalCase | `Button.tsx` |
+| Utility files | camelCase | `formatDate.ts` |
+| CSS modules | kebab-case | `button-styles.module.css` |
+| Component names | PascalCase | `UserProfile` |
+| Functions | camelCase | `calculateTotal` |
+| Constants | UPPER_SNAKE_CASE | `MAX_ITEMS` |
+
+### Component Template
+
+```tsx
+// Imports
+import React from 'react';
+import type { ButtonProps } from './types';
+
+// Component interface
+interface Props {
+  label: string;
+  onClick: () => void;
+  variant?: 'primary' | 'secondary';
+}
+
+// Component definition
+export const Button: React.FC<Props> = ({ 
+  label, 
+  onClick, 
+  variant = 'primary' 
+}) => {
+  // 1. Hooks
+  const [isHovered, setIsHovered] = useState(false);
+  
+  // 2. Event handlers
+  const handleMouseEnter = () => setIsHovered(true);
+  const handleMouseLeave = () => setIsHovered(false);
+  
+  // 3. Return JSX
+  return (
+    <button
+      className={`btn btn-${variant}`}
+      onClick={onClick}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {label}
+    </button>
+  );
+};
+```
+
+### Best Practices
+
+- **State Management**
+  - Keep state as local as possible
+  - Use React Query for server state
+  - Use Context API sparingly
+
+- **Performance**
+  - Use `useMemo` for expensive calculations
+  - Use `useCallback` for event handlers passed as props
+  - Implement virtualization for long lists
+
+- **Accessibility**
+  - Use semantic HTML elements
+  - Add proper ARIA attributes
+  - Ensure keyboard navigation works
+  - Maintain sufficient color contrast
+
+- **Testing**
+  - Write tests for critical user interactions
+  - Test component props and state changes
+  - Place tests next to components (`Component.test.tsx`)
 
 ## 🏁 Next Steps After Generation
 
@@ -241,8 +335,14 @@ You can modify the templates and configuration in `template_config.json` to:
 
 ## 📜 License
 
-Feel free to use, modify, and distribute this project setup system as needed.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## 👥 Contributing
 
-Contributions are welcome! Feel free to enhance the system with additional features, project types, or improvements.
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
