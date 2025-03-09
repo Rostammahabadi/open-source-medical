@@ -3,7 +3,7 @@ import { useState } from 'react';
 interface UseFileUploadProps {
   onUploadSuccess?: (data: any) => void;
   onUploadError?: (error: string) => void;
-  onVerificationComplete?: (result: VerificationResult) => void;
+  onVerificationComplete?: (result: VerificationResult, fileIndex: number) => void;
 }
 
 interface VerificationResult {
@@ -18,6 +18,8 @@ export const useFileUpload = ({ onUploadSuccess, onUploadError, onVerificationCo
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [verifiedFiles, setVerifiedFiles] = useState<boolean[]>([]);
+  const [invalidFiles, setInvalidFiles] = useState<boolean[]>([]);
 
   const handleFileSelect = async (files: File[]) => {
     try {
@@ -26,36 +28,54 @@ export const useFileUpload = ({ onUploadSuccess, onUploadError, onVerificationCo
       
       if (rejectedFiles.length > 0) {
         const rejectedNames = rejectedFiles.map(f => f.name).join(', ');
-        onUploadError?.(`Rejected files: ${rejectedNames}. Only PDF and image files (PNG, JPEG, GIF, WEBP) are allowed.`);
+        onUploadError?.(`Invalid file type(s): ${rejectedNames}. Only PDF and image files (PNG, JPEG, GIF, WEBP) are allowed.`);
       }
 
       if (validFiles.length === 0) {
         return;
       }
 
-      setSelectedFiles(validFiles);
-      setPreviewUrls([]);
+      const newFileStartIndex = selectedFiles.length;
+      setSelectedFiles(prev => [...prev, ...validFiles]);
+      setVerifiedFiles(prev => [...prev, ...Array(validFiles.length).fill(false)]);
+      setInvalidFiles(prev => [...prev, ...Array(validFiles.length).fill(false)]);
+      setPreviewUrls(prev => [...prev, ...Array(validFiles.length).fill('')]);
       
-      for (const file of validFiles) {
+      for (let i = 0; i < validFiles.length; i++) {
+        const file = validFiles[i];
+        const fileIndex = newFileStartIndex + i;
         try {
           if (file.type === 'application/pdf') {
             const imageUrl = await convertPdfToImage(file);
-            setPreviewUrls(prev => [...prev, imageUrl]);
-            await verifyDocument(imageUrl);
+            setPreviewUrls(prev => {
+              const newPreviews = [...prev];
+              newPreviews[fileIndex] = imageUrl;
+              return newPreviews;
+            });
+            await verifyDocument(imageUrl, fileIndex);
           } else {
             const url = URL.createObjectURL(file);
-            setPreviewUrls(prev => [...prev, url]);
+            setPreviewUrls(prev => {
+              const newPreviews = [...prev];
+              newPreviews[fileIndex] = url;
+              return newPreviews;
+            });
             const base64 = await getBase64FromUrl(url);
-            await verifyDocument(base64);
+            await verifyDocument(base64, fileIndex);
           }
         } catch (error) {
           console.error('Failed to process file:', error);
-          onUploadError?.(`Failed to process ${file.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          onUploadError?.(`Failed to process ${file.name}. Please ensure it is a valid medical document.`);
+          setInvalidFiles(prev => {
+            const newInvalid = [...prev];
+            newInvalid[fileIndex] = true;
+            return newInvalid;
+          });
         }
       }
     } catch (error) {
       console.error('File selection error:', error);
-      onUploadError?.(error instanceof Error ? error.message : 'File selection failed');
+      onUploadError?.('Failed to process files. Please try again.');
     }
   };
 
@@ -86,6 +106,37 @@ export const useFileUpload = ({ onUploadSuccess, onUploadError, onVerificationCo
     }
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
     setPreviewUrls(prev => prev.filter((_, i) => i !== index));
+    setVerifiedFiles(prev => prev.filter((_, i) => i !== index));
+    setInvalidFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedFiles.length) {
+      onUploadError?.('Please select at least one medical document to upload.');
+      return;
+    }
+
+    if (invalidFiles.some(Boolean)) {
+      onUploadError?.('Please remove invalid files before submitting.');
+      return;
+    }
+
+    const unverifiedCount = selectedFiles.length - verifiedFiles.filter(Boolean).length;
+    if (unverifiedCount > 0) {
+      onUploadError?.('Please wait for all documents to be verified before submitting.');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      // Here you would implement the actual upload logic
+      onUploadSuccess?.(selectedFiles);
+    } catch (error) {
+      console.error('Upload error:', error);
+      onUploadError?.('Failed to upload files. Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const convertPdfToImage = async (file: File): Promise<string> => {
@@ -117,11 +168,11 @@ export const useFileUpload = ({ onUploadSuccess, onUploadError, onVerificationCo
       return canvas.toDataURL('image/png');
     } catch (error) {
       console.error('PDF conversion error:', error);
-      throw new Error(`Failed to convert PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error('Failed to process PDF. Please ensure it is a valid document.');
     }
   };
 
-  const verifyDocument = async (imageUrl: string) => {
+  const verifyDocument = async (imageUrl: string, fileIndex: number) => {
     try {
       setIsVerifying(true);
       const response = await fetch('/api/verify-document', {
@@ -138,11 +189,25 @@ export const useFileUpload = ({ onUploadSuccess, onUploadError, onVerificationCo
       }
 
       const result = await response.json();
-      onVerificationComplete?.(result);
+      if (!result.isLegitimate) {
+        setInvalidFiles(prev => {
+          const newInvalid = [...prev];
+          newInvalid[fileIndex] = true;
+          return newInvalid;
+        });
+        onUploadError?.(`${selectedFiles[fileIndex].name} is not a valid medical document. Please remove it or upload a valid medical document.`);
+      } else {
+        setVerifiedFiles(prev => {
+          const newVerified = [...prev];
+          newVerified[fileIndex] = true;
+          return newVerified;
+        });
+      }
+      onVerificationComplete?.(result, fileIndex);
       return result;
     } catch (error) {
       console.error('Document verification error:', error);
-      onUploadError?.(error instanceof Error ? error.message : 'Document verification failed');
+      onUploadError?.(`Failed to verify ${selectedFiles[fileIndex].name}. Please try again.`);
       throw error;
     } finally {
       setIsVerifying(false);
@@ -154,7 +219,10 @@ export const useFileUpload = ({ onUploadSuccess, onUploadError, onVerificationCo
     isUploading,
     isVerifying,
     previewUrls,
+    verifiedFiles,
+    invalidFiles,
     handleFileSelect,
-    handleFileRemove
+    handleFileRemove,
+    handleSubmit
   };
 };
