@@ -17,7 +17,6 @@ export interface MedicalBillData {
   hospitalName: string;
   dateOfService: string;
   rawText: string;
-  confidence: number;
 }
 
 export interface ValidationResult {

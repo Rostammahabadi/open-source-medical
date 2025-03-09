@@ -74,11 +74,6 @@ export const validateMedicalBillData = (data: MedicalBillData): ValidationResult
     errors.push('Invalid date of service');
   }
 
-  // Validate OCR confidence
-  if (data.confidence < 0.7) {
-    warnings.push('Low OCR confidence score');
-  }
-
   return {
     isValid: errors.length === 0,
     errors,

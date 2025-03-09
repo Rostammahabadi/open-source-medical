@@ -1,30 +1,6 @@
 {
   "sortedMiddleware": [],
   "middleware": {},
-  "functions": {
-    "/api/ocr/route": {
-      "files": [
-        "server/middleware-build-manifest.js",
-        "server/middleware-react-loadable-manifest.js",
-        "server/next-font-manifest.js",
-        "prerender-manifest.js",
-        "server/edge-runtime-webpack.js",
-        "server/app/api/ocr/route.js"
-      ],
-      "name": "app/api/ocr/route",
-      "page": "/api/ocr/route",
-      "matchers": [
-        {
-          "regexp": "^/api/ocr$",
-          "originalSource": "/api/ocr"
-        }
-      ],
-      "wasm": [],
-      "assets": [],
-      "regions": [
-        "sfo1"
-      ]
-    }
-  },
+  "functions": {},
   "version": 2
 }

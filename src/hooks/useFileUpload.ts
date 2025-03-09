@@ -27,7 +27,7 @@ export const useFileUpload = ({ onUploadSuccess, onUploadError }: UseFileUploadP
         formData.append('file', file);
       });
 
-      const response = await fetch('/api/ocr', {
+      const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
       });
