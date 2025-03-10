@@ -1,5 +1,6 @@
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { FileUpload } from '@/components/upload/FileUpload';
+import { Navigation } from '@/components/common/Navigation';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
 const formatFileSize = (bytes: number): string => {
   if (!bytes || bytes === 0) return '0 B';
@@ -12,13 +13,18 @@ const formatFileSize = (bytes: number): string => {
 const UploadPage = () => {
   return (
     <ProtectedRoute>
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-6">Upload Medical Bills</h1>
-        <p className="text-gray-600 mb-8">
-          Upload your medical bills to help others understand healthcare costs.
-          We accept PDF files and images.
-        </p>
-        <FileUpload />
+      <div>
+        <Navigation />
+        <main>
+          <div className="container mx-auto px-4 py-8">
+            <h1 className="text-2xl font-bold mb-6 text-gray-900">Upload Medical Bills</h1>
+            <p className="text-gray-600 mb-8">
+              Upload your medical bills to help others understand healthcare costs.
+              We accept PDF files and images.
+            </p>
+            <FileUpload />
+          </div>
+        </main>
       </div>
     </ProtectedRoute>
   );
