@@ -34,3 +34,82 @@ Follow these rules when you write code:
 - Use descriptive variable and function/const names. Also, event functions should be named with a “handle” prefix, like “handleClick” for onClick and “handleKeyDown” for onKeyDown.
 - Implement accessibility features on elements. For example, a tag should have a tabindex=“0”, aria-label, on:click, and on:keydown, and similar attributes.
 - Use consts instead of functions, for example, “const toggle = () =>”. Also, define a type if possible.
+
+
+Schema is as follows:
+
+CREATE TABLE IF NOT EXISTS auth_users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    username TEXT NOT NULL UNIQUE,
+    email TEXT NOT NULL UNIQUE,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS hospitals (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL UNIQUE,
+    address JSONB,
+    contact_info JSONB,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS medical_bills (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth_users(id),
+    hospital_id UUID NOT NULL REFERENCES hospitals(id),
+    raw_text TEXT,
+    procedure_descriptions JSONB,
+    procedure_codes JSONB,
+    costs JSONB,
+    date_of_service TIMESTAMPTZ NOT NULL,
+    confidence_score FLOAT8 CHECK (confidence_score >= 0 AND confidence_score <= 1),
+    status BILL_STATUS NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    published_at TIMESTAMPTZ,
+    verification_count INT4 DEFAULT 0,
+    dispute_count INT4 DEFAULT 0,
+    insurance_provider TEXT,
+    insurance_policy_id TEXT,
+    claim_id TEXT,
+    patient_responsibility_numeric NUMERIC(10, 2),
+    insured_amount_numeric NUMERIC(10, 2),
+    negotiated_rate NUMERIC(10, 2),
+    is_transparent BOOLEAN DEFAULT FALSE,
+    notes TEXT,
+    source_file_path TEXT,
+    CONSTRAINT valid_costs CHECK (costs->>'total' IS NOT NULL OR patient_responsibility_numeric IS NOT NULL)
+);
+
+CREATE TYPE BILL_STATUS AS ENUM ('pending', 'verified', 'disputed', 'rejected');
+
+CREATE TABLE IF NOT EXISTS insurance_providers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL UNIQUE,
+    contact_info JSONB,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS procedure_catalog (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    code TEXT NOT NULL UNIQUE,
+    description TEXT NOT NULL,
+    code_type TEXT NOT NULL,
+    average_cost NUMERIC(10, 2),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS price_comparisons (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    medical_bill_id UUID REFERENCES medical_bills(id),
+    procedure_id UUID REFERENCES procedure_catalog(id),
+    hospital_id UUID REFERENCES hospitals(id),
+    insurance_provider_id UUID REFERENCES insurance_providers(id),
+    average_cost NUMERIC(10, 2),
+    region TEXT,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);

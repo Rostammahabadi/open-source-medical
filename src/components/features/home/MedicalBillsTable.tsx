@@ -1,19 +1,79 @@
 import { useState } from 'react';
-import { useMedicalBills } from '@/hooks/useMedicalBills';
+import { useMedicalBills, SortField, SortDirection, FilterParams } from '@/hooks/useMedicalBills';
 import { formatCurrency } from '../../../utils/formatters';
 
-export const MedicalBillsTable = () => {
+interface MedicalBillsTableProps {
+  filters?: FilterParams;
+}
+
+export const MedicalBillsTable = ({ filters = {} }: MedicalBillsTableProps) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const { bills, loading, error } = useMedicalBills(searchTerm);
+  const [sortField, setSortField] = useState<SortField>('created_at');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const { bills, loading, error } = useMedicalBills(searchTerm, sortField, sortDirection, filters);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };
 
+  const handleSort = (field: SortField) => {
+    if (field === sortField) {
+      // Toggle direction if clicking the same field
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Set new field and default to ascending
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  // Helper to render sort indicator
+  const renderSortIndicator = (field: SortField) => {
+    if (sortField !== field) return null;
+    
+    return (
+      <span className="ml-1 inline-block">
+        {sortDirection === 'asc' ? (
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+          </svg>
+        ) : (
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        )}
+      </span>
+    );
+  };
+
   // Extract procedure name from raw text
-  const getProcedureName = (rawText: string): string => {
-    const procedureMatch = rawText.match(/Procedure: (.*?)(?:\n|$)/);
-    return procedureMatch ? procedureMatch[1] : 'Unknown Procedure';
+  const getProcedureName = (bill: any): string => {
+    if (bill.procedureDescriptions && bill.procedureDescriptions.length > 0) {
+      return bill.procedureDescriptions[0];
+    }
+    return 'Unknown Procedure';
+  };
+
+  // Format costs for display
+  const formatBillCosts = (costs: any): string => {
+    if (!costs) return '$0.00';
+    
+    // If total is available, use it
+    if (costs.total) {
+      return formatCurrency(costs.total);
+    }
+    
+    // If patient responsibility is available, use it
+    if (costs.patient_responsibility) {
+      return formatCurrency(costs.patient_responsibility);
+    }
+    
+    // Fallback to subtotal
+    if (costs.subtotal) {
+      return formatCurrency(costs.subtotal);
+    }
+    
+    return '$0.00';
   };
 
   if (error) {
@@ -54,39 +114,63 @@ export const MedicalBillsTable = () => {
                   <tr>
                     <th
                       scope="col"
-                      className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
+                      className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort('hospital_id')}
                     >
-                      Hospital
+                      <div className="flex items-center">
+                        Hospital
+                        {renderSortIndicator('hospital_id')}
+                      </div>
                     </th>
                     <th
                       scope="col"
-                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort('raw_text')}
                     >
-                      Procedure
+                      <div className="flex items-center">
+                        Procedure
+                        {renderSortIndicator('raw_text')}
+                      </div>
                     </th>
                     <th
                       scope="col"
-                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort('patient_responsibility_numeric')}
                     >
-                      Cost
+                      <div className="flex items-center">
+                        Cost
+                        {renderSortIndicator('patient_responsibility_numeric')}
+                      </div>
                     </th>
                     <th
                       scope="col"
-                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort('date_of_service')}
                     >
-                      Date
+                      <div className="flex items-center">
+                        Date
+                        {renderSortIndicator('date_of_service')}
+                      </div>
                     </th>
                     <th
                       scope="col"
-                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort('status')}
                     >
-                      Status
+                      <div className="flex items-center">
+                        Status
+                        {renderSortIndicator('status')}
+                      </div>
                     </th>
                     <th
                       scope="col"
-                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort('confidence_score')}
                     >
-                      Confidence
+                      <div className="flex items-center">
+                        Confidence
+                        {renderSortIndicator('confidence_score')}
+                      </div>
                     </th>
                   </tr>
                 </thead>
@@ -130,16 +214,16 @@ export const MedicalBillsTable = () => {
                     bills.map((bill) => (
                       <tr key={bill.id}>
                         <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                          {bill.hospital_name}
+                          {bill.hospitalName}
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                          {getProcedureName(bill.raw_text)}
+                          {getProcedureName(bill)}
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                          {formatCurrency(bill.costs)}
+                          {formatBillCosts(bill.costs)}
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                          {new Date(bill.date_of_service).toLocaleDateString()}
+                          {new Date(bill.dateOfService).toLocaleDateString()}
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm">
                           <span
@@ -148,6 +232,8 @@ export const MedicalBillsTable = () => {
                                 ? 'bg-green-100 text-green-800'
                                 : bill.status === 'disputed'
                                 ? 'bg-red-100 text-red-800'
+                                : bill.status === 'rejected'
+                                ? 'bg-red-100 text-red-800'
                                 : 'bg-yellow-100 text-yellow-800'
                             }`}
                           >
@@ -155,7 +241,7 @@ export const MedicalBillsTable = () => {
                           </span>
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                          {(bill.confidence_score * 100).toFixed(0)}%
+                          {(bill.confidence * 100).toFixed(0)}%
                         </td>
                       </tr>
                     ))

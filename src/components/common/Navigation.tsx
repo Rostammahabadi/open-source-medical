@@ -1,17 +1,23 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import { useState } from 'react';
 
 export const Navigation = () => {
-  const { logout } = useAuth();
+  const { logout, isAuthenticated, user } = useAuth();
   const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
     try {
+      setIsLoggingOut(true);
       await logout();
-      router.push('/auth');
+      // Redirect to home page after logout instead of auth page
+      router.push('/');
     } catch (error) {
       console.error('Logout failed:', error);
+    } finally {
+      setIsLoggingOut(false);
     }
   };
 
@@ -42,26 +48,40 @@ export const Navigation = () => {
                 >
                   Home
                 </Link>
-                <Link
-                  href="/upload"
-                  className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    router.pathname === '/upload'
-                      ? 'text-blue-700 bg-white shadow-lg transform scale-105'
-                      : 'text-white hover:bg-white/20'
-                  }`}
-                >
-                  Upload
-                </Link>
+                {isAuthenticated && (
+                  <Link
+                    href="/upload"
+                    className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      router.pathname === '/upload'
+                        ? 'text-blue-700 bg-white shadow-lg transform scale-105'
+                        : 'text-white hover:bg-white/20'
+                    }`}
+                  >
+                    Upload
+                  </Link>
+                )}
               </div>
             </div>
             <div className="flex items-center">
-              <button
-                onClick={handleLogout}
-                className="ml-4 px-6 py-2.5 text-sm font-medium text-indigo-700 bg-white rounded-lg hover:bg-gray-100 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                aria-label="Logout"
-              >
-                Logout
-              </button>
+              {isAuthenticated ? (
+                <button
+                  onClick={handleLogout}
+                  disabled={isLoggingOut}
+                  className={`ml-4 px-6 py-2.5 text-sm font-medium text-indigo-700 bg-white rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 ${
+                    isLoggingOut ? 'opacity-75 cursor-not-allowed' : 'hover:bg-gray-100'
+                  }`}
+                  aria-label="Logout"
+                >
+                  {isLoggingOut ? 'Logging out...' : 'Logout'}
+                </button>
+              ) : (
+                <Link
+                  href="/auth"
+                  className="ml-4 px-6 py-2.5 text-sm font-medium text-indigo-700 bg-white rounded-lg hover:bg-gray-100 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                >
+                  Login
+                </Link>
+              )}
             </div>
           </div>
         </div>
