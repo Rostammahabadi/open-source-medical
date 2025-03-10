@@ -8,6 +8,9 @@ desktop.ini
 .idea/
 *.sublime-project
 *.sublime-workspace
+*.swp
+*.swo
+.vs/
 
 # Temporary files
 *.log
@@ -18,12 +21,20 @@ desktop.ini
 dist/
 build/
 out/
+.next/
+.vercel/
 
 # Node.js
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnp/
+.pnp.js
+.yarn/
+.yarnrc
+.npm/
+coverage/
 
 # Environment variables
 .env
@@ -32,7 +43,28 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Testing
+/coverage
+.nyc_output
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
 # Project specific
-*.bak 
-.env.*
-.next/*
+*.bak
+.cache/
+public/uploads/
+public/temp/
+
+# Supabase
+.supabase/
+
+# Misc
+.DS_Store
+*.pem

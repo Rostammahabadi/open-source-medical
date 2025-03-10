@@ -1,8 +1,1 @@
-{
-  "/_app": "pages/_app.js",
-  "/_error": "pages/_error.js",
-  "/_document": "pages/_document.js",
-  "/": "pages/index.js",
-  "/api/verify-document": "pages/api/verify-document.js",
-  "/upload": "pages/upload.js"
-}
+{"/admin/seed":"pages/admin/seed.html","/api/seed-database":"pages/api/seed-database.js","/_app":"pages/_app.js","/api/verify-document":"pages/api/verify-document.js","/":"pages/index.html","/auth":"pages/auth.html","/_error":"pages/_error.js","/upload":"pages/upload.html","/_document":"pages/_document.js","/404":"pages/404.html"}
